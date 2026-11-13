@@ -2,6 +2,8 @@
 
 Run `make run` from the repository root and open http://localhost:8080. The Go binary embeds the HTML, CSS and JavaScript: no frontend package installation, build step or separate server is required. Restart the server after changing embedded frontend files.
 
+The page opens in offline demo mode. It does not call NEAR RPC, the Intents API, a wallet, or a live lending protocol until **Enable live preview** is clicked in the separate Intents card. This keeps the rescue walkthrough deterministic and usable without credentials or network access.
+
 ## Reproduce the rescue demo
 
 1. Open Overview. The NEAR sample starts at $2,400 collateral, $1,200 debt, an $800 reserve and health factor 1.60.

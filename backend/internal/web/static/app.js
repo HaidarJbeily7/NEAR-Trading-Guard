@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
 const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-let snapshot = null, selectedID = '', busy = false, tokens = [], quoteVersion = 0, statusVersion = 0, quoteExpiryTimer, toastTimer;
+let snapshot = null, selectedID = '', busy = false, tokens = [], liveEnabled = false, quoteVersion = 0, statusVersion = 0, quoteExpiryTimer, toastTimer;
 const statuses = {
  healthy: ['Healthy', 'safe'], rescue_planned: ['Rescue needed', 'warning'], insufficient_reserve: ['Low reserve', 'danger'],
  liquidatable: ['Liquidation risk', 'danger'], liquidated: ['Liquidated', 'danger'], paused: ['Paused', 'neutral']
@@ -140,6 +140,10 @@ async function loadTokens(){
  }catch(e){error('quote-error',`Live assets unavailable: ${e.message}`);$('retry-tokens').hidden=false;}
 }
 $('retry-tokens').addEventListener('click',loadTokens);
+$('enable-live').addEventListener('click',async()=>{
+ liveEnabled=true;$('live-gate').hidden=true;$('live-form').hidden=false;
+ await loadTokens();
+});
 $('quote-form').addEventListener('submit',async event=>{
  event.preventDefault();invalidateQuote();const version=quoteVersion;
  const origin=tokens.find(t=>t.assetId===$('origin-asset').value),destination=tokens.find(t=>t.assetId===$('destination-asset').value);
@@ -169,4 +173,6 @@ $('status-form').addEventListener('submit',async event=>{
 $('status-form').addEventListener('input',()=>{statusVersion++;$('swap-status').innerHTML='';error('status-error');});
 for(const link of document.querySelectorAll('.nav-link'))link.addEventListener('click',()=>{document.querySelector('.nav-link.active')?.classList.remove('active');link.classList.add('active');});
 async function refreshPositions(){if(busy||document.hidden)return;try{const data=await api('/api/positions');if(!busy&&(!snapshot||data.revision>snapshot.revision))accept(data);error('global-error');}catch(e){error('global-error',`Positions unavailable: ${e.message}`);}}
-refreshPositions();loadTokens();setInterval(refreshPositions,5000);
+// The simulator starts from local state only. Live Intents is opt-in so an
+// offline demo never waits on RPC/API availability or asks for an account.
+refreshPositions();setInterval(refreshPositions,5000);

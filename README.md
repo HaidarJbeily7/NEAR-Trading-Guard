@@ -4,7 +4,7 @@ A Go backend and Rust NEAR contract scaffold for budget-limited liquidation-risk
 
 ## Dashboard
 
-Run `make run` and open **http://localhost:8080**. The dashboard consumes the Go position API, shows health and reserve balances, and simulates price drops and budget-limited rescues. It also provides live Intents previews and swap-status lookup.
+Run `make run` and open **http://localhost:8080**. The dashboard consumes only the local Go position API for its main demo, shows health and reserve balances, and simulates price drops and budget-limited rescues. Live Intents previews are hidden behind an explicit opt-in and are never needed for the rescue demo.
 
 Try the default 25% NEAR price drop to see an automatic rescue, then the ETH position to see an insufficient-reserve failure. Add custom simulated positions, pause protection, and inspect activity and health history. See the [dashboard guide](docs/dashboard.md).
 
