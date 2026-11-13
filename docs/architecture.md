@@ -1,6 +1,8 @@
 # Architecture and next steps
 
-Go API / future keeper -> position adapter -> risk planner -> dry Intents quote.
+Implemented: Go CLI/API -> mainnet Intents token discovery and validated preview. Local CLI -> prepared quote -> manual wallet deposit -> status lookup.
+
+Separate simulated path: Go API -> risk planner. Future keeper and position adapters remain unconnected.
 Future execution: owner-approved policy -> funded swap -> confirmed settlement -> lending adapter -> verified health factor.
 
 The Rust NEAR contract currently stores owner-controlled health thresholds and a pause flag. Its state is not connected to the Go demo. Budget enforcement, reserves and execution permissions remain unimplemented.
@@ -13,7 +15,7 @@ The Rust NEAR contract currently stores owner-controlled health thresholds and a
 
 1. Add a mock lending contract and oracle with deterministic crash scenarios.
 2. Wire a real read-only position source, with freshness checks.
-3. Connect Intents token discovery and validated dry quote requests to the API.
+3. Verify the implemented Intents reserve swap with a funded user wallet and confirmed settlement.
 4. Add keeper scheduling, duplicate prevention and persisted operation states.
 5. Implement on-chain budgets, keeper permissions and an allowlisted lending adapter.
 6. Add a dashboard with separate simulated, quoted and settled states.

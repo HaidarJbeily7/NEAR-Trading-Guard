@@ -1,0 +1,14 @@
+{
+  "dry": true,
+  "swapType": "EXACT_INPUT",
+  "slippageTolerance": 50,
+  "originAsset": "REPLACE_FROM_LIVE_TOKEN_LIST",
+  "depositType": "ORIGIN_CHAIN",
+  "destinationAsset": "REPLACE_FROM_LIVE_TOKEN_LIST",
+  "amount": "REPLACE_WITH_INTEGER_SMALLEST_UNITS",
+  "recipient": "REPLACE_WITH_YOUR_MAINNET_ACCOUNT",
+  "recipientType": "DESTINATION_CHAIN",
+  "refundTo": "REPLACE_WITH_YOUR_MAINNET_ACCOUNT",
+  "refundType": "ORIGIN_CHAIN",
+  "deadline": ""
+}
