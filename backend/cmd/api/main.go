@@ -19,6 +19,6 @@ func main() {
 		WriteTimeout:      45 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	log.Printf("API on http://%s; Intents mainnet previews enabled; lending simulated; signing disabled", server.Addr)
+	log.Printf("API on http://%s; live position adapter unconfigured; Intents previews opt-in; signing disabled", server.Addr)
 	log.Fatal(server.ListenAndServe())
 }

@@ -68,7 +68,7 @@ Run `make run`. It binds only to `127.0.0.1:8080`:
 - `GET /api/intents/tokens`: NEAR-chain assets supported by the live provider.
 - `POST /api/intents/quote`: a validated preview request; always dry.
 - `GET /api/intents/status?depositAddress=...&depositMemo=...`: provider status.
-- `GET /api/demo`: simulated lending calculation, independent of the swap.
+- `GET /api/positions`: live lending-adapter boundary; currently empty until an adapter is configured.
 - `GET /healthz`: local process status, not an upstream availability check.
 
 There is no HTTP prepare/fund endpoint. Before exposing the API publicly, add authentication and rate limiting at the deployment boundary. No automated retry is performed for quote creation.
@@ -77,7 +77,7 @@ There is no HTTP prepare/fund endpoint. Before exposing the API publicly, add au
 
 Run `make test vet`. Tests exercise forced preview mode, explicit preparation limits, unsupported routes, malformed/mismatched quotes, expiry, response limits, HTTP errors, memo encoding and method restrictions. Mock fixtures do not establish live liquidity or settlement.
 
-Real funding and settlement must be verified with the user's selected route before calling this milestone end-to-end tested. Automatic lending rescue remains a separate integration requiring a real protocol adapter, integer risk calculations, on-chain budget enforcement and settlement verification. The Rust policy scaffold is not a production reserve vault and should not receive user funds.
+Real funding and settlement must be verified with the user's selected route before calling this milestone end-to-end tested. Automatic lending rescue requires a real protocol adapter, integer risk calculations, on-chain budget enforcement and settlement verification. The Rust policy scaffold is not a production reserve vault and should not receive user funds.
 
 References:
 
