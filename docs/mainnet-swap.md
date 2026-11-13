@@ -18,7 +18,7 @@ Edit `local/request.json`. Replace all placeholders with two different NEAR-chai
 
 Use a fresh dedicated wallet with a small balance for the first swap. The recipient must be able to receive the selected NEP-141 token; check token storage registration before funding. A NEAR account ID passing syntax validation is not proof that the account exists or has registered token storage.
 
-The CLI fills an empty deadline with five minutes from now. The API requires an explicit RFC3339 deadline. Supported slippage is 0–100 basis points; 50 means 0.5%. Route minimum amounts and provider fees still apply; very small swaps may be rejected.
+The CLI fills an empty request deadline with five minutes from now. This request deadline starts refunds for an unfinished swap; the response quote deadline describes deposit-address lifetime. Fund only before the earlier deadline. The API requires an explicit RFC3339 deadline. Supported slippage is 0–100 basis points; 50 means 0.5%. Route minimum amounts and provider fees still apply; very small swaps may be rejected.
 
 Optionally export `INTENTS_JWT` in the shell. Do not paste a wallet private key into the API or configuration. `.env` is not loaded automatically.
 

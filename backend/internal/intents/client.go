@@ -244,6 +244,11 @@ func validateQuote(data []byte, request Request, now time.Time) error {
 	if echoed.Dry != request.Dry || echoed.Amount != request.Amount || echoed.OriginAsset != request.OriginAsset || echoed.DestinationAsset != request.DestinationAsset || echoed.Recipient != request.Recipient || echoed.RefundTo != request.RefundTo || echoed.SwapType != request.SwapType || echoed.DepositType != request.DepositType || echoed.RecipientType != request.RecipientType || echoed.RefundType != request.RefundType || echoed.SlippageTolerance != request.SlippageTolerance {
 		return errors.New("quote does not match requested route, addresses, mode or limits")
 	}
+	requestedDeadline, requestErr := time.Parse(time.RFC3339, request.Deadline)
+	echoedDeadline, echoErr := time.Parse(time.RFC3339, echoed.Deadline)
+	if requestErr != nil || echoErr != nil || !echoedDeadline.Equal(requestedDeadline) {
+		return errors.New("quote changed the requested refund deadline")
+	}
 	q := response.Quote
 	if q.AmountIn != request.Amount || !integer.MatchString(q.AmountOut) || !integer.MatchString(q.MinAmountOut) {
 		return errors.New("quote has invalid or mismatched amounts")
@@ -260,8 +265,10 @@ func validateQuote(data []byte, request Request, now time.Time) error {
 			return errors.New("prepared quote lacks deposit address or service signature")
 		}
 		deadline, err := time.Parse(time.RFC3339, q.Deadline)
-		requestedDeadline, _ := time.Parse(time.RFC3339, request.Deadline)
-		if err != nil || !deadline.After(now.Add(30*time.Second)) || deadline.After(requestedDeadline) {
+		// The request deadline starts refunds; the quote deadline is the
+		// provider's deposit-address lifetime. They need not be identical.
+		// Funding must occur before BOTH deadlines.
+		if err != nil || !deadline.After(now.Add(30*time.Second)) || !requestedDeadline.After(now.Add(30*time.Second)) {
 			return errors.New("prepared quote has unsafe expiry")
 		}
 	}

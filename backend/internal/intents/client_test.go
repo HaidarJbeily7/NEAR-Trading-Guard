@@ -171,3 +171,17 @@ func TestRejectMismatchedQuote(t *testing.T) {
 		})
 	}
 }
+
+func TestDepositLifetimeMayExceedRefundDeadline(t *testing.T) {
+	request := validRequest()
+	body, _ := json.Marshal(map[string]any{
+		"signature": "fixture-signature", "quoteRequest": request,
+		"quote": map[string]string{"depositAddress": "deposit.near", "amountIn": request.Amount, "amountOut": "1000", "minAmountOut": "995", "deadline": time.Now().Add(time.Hour).UTC().Format(time.RFC3339)},
+	})
+	if err := validateQuote(body, request, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if err := validateQuote(body, request, time.Now().Add(6*time.Minute)); err == nil {
+		t.Fatal("accepted elapsed refund deadline")
+	}
+}
