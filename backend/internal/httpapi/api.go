@@ -4,15 +4,59 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/HaidarJbeily7/NEAR-Trading-Guard/backend/internal/intents"
+	"github.com/HaidarJbeily7/NEAR-Trading-Guard/backend/internal/positions"
 	"github.com/HaidarJbeily7/NEAR-Trading-Guard/backend/internal/risk"
+	"github.com/HaidarJbeily7/NEAR-Trading-Guard/backend/internal/web"
 )
 
 func Handler(client intents.Client) http.Handler {
 	mux := http.NewServeMux()
+	store := positions.New()
+	mux.Handle("/", web.Handler())
+	mux.HandleFunc("/api/positions", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			write(w, store.Snapshot())
+		case http.MethodPost:
+			var input positions.Create
+			if !decode(w, r, &input) {
+				return
+			}
+			result, err := store.Add(input)
+			if err != nil {
+				http.Error(w, err.Error(), 400)
+				return
+			}
+			write(w, result)
+		default:
+			w.Header().Set("Allow", "GET, POST")
+			http.Error(w, "method not allowed", 405)
+		}
+	})
+	mux.HandleFunc("/api/positions/action", func(w http.ResponseWriter, r *http.Request) {
+		if !method(w, r, http.MethodPost) {
+			return
+		}
+		var input positions.Action
+		if !decode(w, r, &input) {
+			return
+		}
+		result, err := store.Apply(input)
+		if err != nil {
+			code := 400
+			if errors.Is(err, positions.ErrConflict) {
+				code = 409
+			}
+			http.Error(w, err.Error(), code)
+			return
+		}
+		write(w, result)
+	})
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if !method(w, r, http.MethodGet) {
 			return
@@ -101,4 +145,20 @@ func method(w http.ResponseWriter, r *http.Request, want string) bool {
 func write(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(data)
+}
+
+func decode(w http.ResponseWriter, r *http.Request, v any) bool {
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(v); err != nil {
+		http.Error(w, "invalid request", 400)
+		return false
+	}
+	var extra any
+	if decoder.Decode(&extra) != io.EOF {
+		http.Error(w, "expected one JSON object", 400)
+		return false
+	}
+	return true
 }

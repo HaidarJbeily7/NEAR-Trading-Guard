@@ -31,3 +31,27 @@ func TestLocalRoutes(t *testing.T) {
 		}
 	}
 }
+
+func TestPositionAPIRoundTrip(t *testing.T) {
+	h := Handler(intents.Client{})
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("POST", "/api/positions/action", strings.NewReader(`{"id":"near-1","action":"crash","revision":0,"drop_percent":25}`)))
+	if w.Code != 200 || !strings.Contains(w.Body.String(), "Position rescued") {
+		t.Fatalf("%d %s", w.Code, w.Body.String())
+	}
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("POST", "/api/positions/action", strings.NewReader(`{"id":"near-1","action":"crash","revision":0,"drop_percent":25}`)))
+	if w.Code != 409 {
+		t.Fatalf("stale action accepted: %d", w.Code)
+	}
+	for _, path := range []string{"/", "/app.js", "/styles.css"} {
+		w = httptest.NewRecorder()
+		h.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+		if w.Code != 200 {
+			t.Fatalf("asset %s failed: %d", path, w.Code)
+		}
+		if w.Header().Get("Content-Security-Policy") == "" {
+			t.Fatal("missing CSP")
+		}
+	}
+}
